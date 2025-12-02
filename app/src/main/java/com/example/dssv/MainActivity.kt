@@ -1,5 +1,6 @@
 package com.example.dssv
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -9,24 +10,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import android.view.Menu
+import android.view.MenuItem
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var editTextName: EditText
-    private lateinit var editTextStudentId: EditText
-    private lateinit var buttonAdd: Button
-    private lateinit var buttonUpdate: Button
     private lateinit var listViewStudents: ListView
-
-    private val studentList = mutableListOf(
-        Student("Nguyễn Văn An", "20210001"),
-        Student("Trần Thị Bình", "20210055"),
-        Student("Lê Văn Cường", "20205012"),
-        Student("Phạm Thị Dung", "20221234"),
-        Student("Hoàng Minh Hải", "20194567")
-    )
     private lateinit var adapter: StudentAdapter
-    private var selectedStudentIndex: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,71 +28,37 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        // Initialize UI components
-        editTextName = findViewById(R.id.editTextName)
-        editTextStudentId = findViewById(R.id.editTextStudentId)
-        buttonAdd = findViewById(R.id.buttonAdd)
-        buttonUpdate = findViewById(R.id.buttonUpdate)
-        listViewStudents = findViewById(R.id.listViewStudents)
+        setSupportActionBar(findViewById(R.id.toolbar))
 
-        // Setup Adapter
-        adapter = StudentAdapter(this, R.layout.list_item_student, studentList)
+        listViewStudents = findViewById(R.id.listViewStudents)
+        adapter = StudentAdapter(this, R.layout.list_item_student, StudentRepository.students)
         listViewStudents.adapter = adapter
 
-        // Set Listeners
-        setupListeners()
-    }
-
-    private fun setupListeners() {
-        // Add button listener
-        buttonAdd.setOnClickListener {
-            val name = editTextName.text.toString()
-            val studentId = editTextStudentId.text.toString()
-
-            if (name.isNotEmpty() && studentId.isNotEmpty()) {
-                val student = Student(name, studentId)
-                studentList.add(student)
-                adapter.notifyDataSetChanged()
-                clearInputFields()
-            } else {
-                Toast.makeText(this, "Vui lòng nhập đầy đủ họ tên và MSSV", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        // Update button listener
-        buttonUpdate.setOnClickListener {
-            val name = editTextName.text.toString()
-
-            if (selectedStudentIndex != -1 && name.isNotEmpty()) {
-                val studentToUpdate = studentList[selectedStudentIndex]
-                studentToUpdate.name = name // Update the name
-                adapter.notifyDataSetChanged()
-                clearInputFields()
-                Toast.makeText(this, "Cập nhật thành công", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Vui lòng chọn một sinh viên và nhập họ tên mới", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        // ListView item click listener
         listViewStudents.setOnItemClickListener { _, _, position, _ ->
-            selectedStudentIndex = position
-            val selectedStudent = studentList[position]
-
-            // Display student info in EditTexts
-            editTextName.setText(selectedStudent.name)
-            editTextStudentId.setText(selectedStudent.studentId)
-
-            // Disable editing of student ID when updating
-            editTextStudentId.isEnabled = false
+            val student = StudentRepository.students[position]
+            val intent = Intent(this, StudentDetailActivity::class.java)
+            intent.putExtra("studentId", student.studentId)
+            startActivity(intent)
         }
     }
 
-    private fun clearInputFields() {
-        editTextName.text.clear()
-        editTextStudentId.text.clear()
-        editTextStudentId.isEnabled = true // Re-enable student ID field
-        selectedStudentIndex = -1 // Reset selection
-        editTextName.requestFocus()
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_add -> {
+                startActivity(Intent(this, AddStudentActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adapter.notifyDataSetChanged()
     }
 }
