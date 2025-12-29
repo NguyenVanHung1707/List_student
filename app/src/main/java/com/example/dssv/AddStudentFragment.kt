@@ -42,7 +42,7 @@ class AddStudentFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            val student = Student(name, studentId, phone, address)
+            val student = Student(name = name, studentId = studentId, phone = phone, address = address)
             val success = viewModel.addStudent(student)
             
             if (success) {

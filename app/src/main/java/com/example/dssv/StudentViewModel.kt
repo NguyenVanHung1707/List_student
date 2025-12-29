@@ -1,22 +1,22 @@
 package com.example.dssv
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 
-class StudentViewModel : ViewModel() {
+/**
+ * ViewModel cho quản lý sinh viên
+ * Kế thừa AndroidViewModel để có Context cho Repository
+ */
+class StudentViewModel(application: Application) : AndroidViewModel(application) {
     
-    private val _students = MutableLiveData<MutableList<Student>>(
-        mutableListOf(
-            Student("Nguyễn Văn An", "20210001", "0901000001", "Hà Nội"),
-            Student("Trần Thị Bình", "20210055", "0902000055", "TP. HCM"),
-            Student("Lê Văn Cường", "20205012", "0903505012", "Đà Nẵng"),
-            Student("Phạm Thị Dung", "20221234", "0904121234", "Cần Thơ"),
-            Student("Hoàng Minh Hải", "20194567", "0905945678", "Hải Phòng")
-        )
-    )
+    private val repository: StudentRepository = StudentRepository.getInstance(application)
+    
+    // LiveData cho danh sách sinh viên
+    private val _students = MutableLiveData<MutableList<Student>>()
     val students: LiveData<MutableList<Student>> = _students
-
+    
     // Selected student for editing
     private val _selectedStudent = MutableLiveData<Student?>()
     val selectedStudent: LiveData<Student?> = _selectedStudent
@@ -26,6 +26,20 @@ class StudentViewModel : ViewModel() {
     val name = MutableLiveData<String>("")
     val phone = MutableLiveData<String>("")
     val address = MutableLiveData<String>("")
+
+    init {
+        // Khởi tạo dữ liệu mẫu nếu database trống
+        repository.initializeWithSampleData()
+        // Load dữ liệu từ database
+        loadStudents()
+    }
+
+    /**
+     * Load danh sách sinh viên từ database
+     */
+    fun loadStudents() {
+        _students.value = repository.getAll().toMutableList()
+    }
 
     fun selectStudent(student: Student?) {
         _selectedStudent.value = student
@@ -46,18 +60,25 @@ class StudentViewModel : ViewModel() {
     }
 
     fun getStudentById(id: String): Student? {
-        return _students.value?.find { it.studentId == id }
+        return repository.getById(id)
     }
 
+    /**
+     * Thêm sinh viên mới
+     * @return true nếu thành công, false nếu MSSV đã tồn tại
+     */
     fun addStudent(student: Student): Boolean {
-        val exists = _students.value?.any { it.studentId == student.studentId } ?: false
-        if (exists) return false
-        
-        _students.value?.add(student)
-        _students.value = _students.value // Trigger LiveData update
-        return true
+        val success = repository.add(student)
+        if (success) {
+            loadStudents() // Reload danh sách từ database
+        }
+        return success
     }
 
+    /**
+     * Cập nhật thông tin sinh viên
+     * @return true nếu cập nhật thành công
+     */
     fun updateStudent(): Boolean {
         val student = _selectedStudent.value ?: return false
         val currentName = name.value?.trim() ?: ""
@@ -66,12 +87,19 @@ class StudentViewModel : ViewModel() {
         student.name = currentName
         student.phone = phone.value?.trim() ?: ""
         student.address = address.value?.trim() ?: ""
-        _students.value = _students.value // Trigger LiveData update
-        return true
+        
+        val success = repository.update(student)
+        if (success) {
+            loadStudents() // Reload danh sách từ database
+        }
+        return success
     }
 
+    /**
+     * Xóa sinh viên
+     */
     fun deleteStudent(student: Student) {
-        _students.value?.remove(student)
-        _students.value = _students.value // Trigger LiveData update
+        repository.delete(student.studentId)
+        loadStudents() // Reload danh sách từ database
     }
 }

@@ -2,4 +2,21 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Primary Colors - Green Theme -->
+    <color name="green_primary">#2E7D32</color>
+    <color name="green_primary_dark">#1B5E20</color>
+    <color name="green_accent">#69F0AE</color>
+    
+    <!-- Secondary Colors - Lime Accent -->
+    <color name="lime_secondary">#AFB42B</color>
+    <color name="lime_light">#CDDC39</color>
+    
+    <!-- Background Colors -->
+    <color name="bg_light">#E8F5E9</color>
+    <color name="bg_card">#C8E6C9</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#1B5E20</color>
+    <color name="text_secondary">#4CAF50</color>
 </resources>

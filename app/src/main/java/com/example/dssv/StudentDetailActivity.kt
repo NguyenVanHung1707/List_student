@@ -34,7 +34,8 @@ class StudentDetailActivity : AppCompatActivity() {
             return
         }
 
-        student = StudentRepository.getById(studentId)
+        val repository = StudentRepository.getInstance(applicationContext)
+        student = repository.getById(studentId)
         if (student == null) {
             Toast.makeText(this, "Không tìm thấy sinh viên", Toast.LENGTH_SHORT).show()
             finish()
@@ -58,6 +59,7 @@ class StudentDetailActivity : AppCompatActivity() {
                 it.name = name
                 it.phone = editPhone.text.toString().trim()
                 it.address = editAddress.text.toString().trim()
+                repository.update(it)
             }
             Toast.makeText(this, "Đã cập nhật", Toast.LENGTH_SHORT).show()
             finish()

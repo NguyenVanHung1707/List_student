@@ -37,13 +37,14 @@ class AddStudentActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val exists = StudentRepository.getById(studentId) != null
+            val repository = StudentRepository.getInstance(applicationContext)
+            val exists = repository.exists(studentId)
             if (exists) {
                 Toast.makeText(this, "MSSV đã tồn tại", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            StudentRepository.add(Student(name, studentId, phone, address))
+            repository.add(Student(name = name, studentId = studentId, phone = phone, address = address))
             Toast.makeText(this, "Đã thêm sinh viên", Toast.LENGTH_SHORT).show()
             finish()
         }
